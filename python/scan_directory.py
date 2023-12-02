@@ -38,7 +38,7 @@ if __name__ == '__main__':
     path = 'hacg'
     
     # 替换为你想要保存的 JSON 文件路径
-    output_file = 'download_links.json'
+    output_file = 'image_paths.json'
 
     contents = get_github_contents(repo_owner, repo_name, path)
 
