@@ -1,4 +1,4 @@
-name: 扫描目录并保存图像路径-py
+name: 扫描wallpaper目录图像路径-py
 on:
   schedule:
     - cron: '0 3 * * 0'  # 每周日的3点执行
