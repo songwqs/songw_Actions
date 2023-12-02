@@ -24,7 +24,7 @@ def extract_download_links(contents):
             download_links.extend(extract_download_links(sub_contents))
         elif 'download_url' in item:
             # 去掉下载链接中的 "https://raw.githubusercontent.com/" 和 "/main"
-            download_link = item['download_url'].replace('https://raw.githubusercontent.com/', '').replace('/main/', '')
+            download_link = item['download_url'].replace('https://raw.githubusercontent.com/', '').replace('/main/', '/', 1)
             download_links.append(download_link)
 
     return download_links
