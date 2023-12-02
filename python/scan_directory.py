@@ -34,8 +34,10 @@ def main():
     all_image_paths = []
 
     for subdir in os.listdir(base_path):
-        subdir_image_paths = get_image_paths(repo_owner, repo_name, f"hacg/{subdir}", github_token)
-        all_image_paths.extend(subdir_image_paths)
+        subdir_path = os.path.join("hacg", subdir)
+        if os.path.isdir(subdir_path):
+            subdir_image_paths = get_image_paths(repo_owner, repo_name, subdir_path, github_token)
+            all_image_paths.extend(subdir_image_paths)
 
     with open('image_paths.json', 'w') as json_file:
         json.dump(all_image_paths, json_file, indent=2)
