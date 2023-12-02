@@ -30,8 +30,11 @@ def extract_download_links(contents):
     return download_links
 
 def save_to_json(data, output_file):
+    # 添加总数到 JSON 数据
+    json_data = {'total': len(data), 'download_links': data}
+
     with open(output_file, 'w') as json_file:
-        json.dump(data, json_file, indent=2)
+        json.dump(json_data, json_file, indent=2)
 
 if __name__ == '__main__':
     # 替换为你的 GitHub 仓库信息和目标目录
