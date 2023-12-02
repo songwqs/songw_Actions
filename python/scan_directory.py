@@ -18,7 +18,11 @@ def extract_download_links(contents):
     download_links = []
 
     for item in contents:
-        if 'download_url' in item:
+        if item['type'] == 'dir':
+            # 递归遍历子目录
+            sub_contents = get_github_contents(repo_owner, repo_name, item['path'])
+            download_links.extend(extract_download_links(sub_contents))
+        elif 'download_url' in item:
             download_links.append(item['download_url'])
 
     return download_links
@@ -34,7 +38,7 @@ if __name__ == '__main__':
     path = 'hacg'
     
     # 替换为你想要保存的 JSON 文件路径
-    output_file = 'image_paths.json'
+    output_file = 'download_links.json'
 
     contents = get_github_contents(repo_owner, repo_name, path)
 
