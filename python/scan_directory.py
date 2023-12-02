@@ -30,13 +30,16 @@ def main():
 
     # Use GitHub Actions checkout path as the base_path
     base_path = os.environ['GITHUB_WORKSPACE']
+    hacg_path = os.path.join(base_path, "hacg")
 
     all_image_paths = []
 
-    for subdir in os.listdir(base_path):
-        subdir_path = os.path.join("hacg", subdir)
+    # 遍历/hacg/目录下的所有子目录
+    for subdir in os.listdir(hacg_path):
+        subdir_path = os.path.join(hacg_path, subdir)
         if os.path.isdir(subdir_path):
-            subdir_image_paths = get_image_paths(repo_owner, repo_name, subdir_path, github_token)
+            # 在每个子目录中查找图片
+            subdir_image_paths = get_image_paths(repo_owner, repo_name, f"hacg/{subdir}", github_token)
             all_image_paths.extend(subdir_image_paths)
 
     with open('image_paths.json', 'w') as json_file:
