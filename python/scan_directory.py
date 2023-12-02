@@ -16,6 +16,9 @@ def get_image_paths(repo_owner, repo_name, path, github_token, base_path):
             full_path = f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/main/{path}/{item['name']}"
             image_paths.append(full_path)
 
+    # 调试语句，打印获取到的图片路径
+    print(f"Path: {path}, Image Paths: {image_paths}")
+
     return image_paths
 
 def main():
