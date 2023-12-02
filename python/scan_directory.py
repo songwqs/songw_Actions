@@ -24,6 +24,10 @@ def main():
     base_path = "hacg"
     github_token = os.environ['GITHUB_TOKEN']
 
+    # 使用 GitHub Actions 的工作目录作为基准
+    work_dir = os.environ['GITHUB_WORKSPACE']
+    base_path = os.path.join(work_dir, base_path)
+
     all_image_paths = []
 
     for subdir in os.listdir(base_path):
@@ -40,5 +44,4 @@ def main():
         content = json_file.read()
         print(content)
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main_
