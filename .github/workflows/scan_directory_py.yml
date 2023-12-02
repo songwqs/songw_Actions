@@ -38,6 +38,10 @@ jobs:
           python python/scan_directory.py
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_2 }}
+          REPO_OWNER: songwqs
+          REPO_NAME: cdnImg
+          PATH_TO_SCAN: hacg
+          OUTPUT_FILE: image_paths.json
       
       - name: 拉取 cdnImg 仓库的更改
         run: |
