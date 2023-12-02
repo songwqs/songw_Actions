@@ -1,10 +1,13 @@
-
 name: 扫描目录并保存图像路径-py
-
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: '0 3 * * 0'  # 每周日的3点执行
+  workflow_dispatch:
+    # 为手动触发提供一个可选的输入参数
+    inputs:
+      manual_trigger:
+        description: '手动启动'
+        default: 'false'
 
 jobs:
   scan_images:
@@ -16,17 +19,9 @@ jobs:
         with:
           repository: songwqs/songw_Actions
           path: songw_Actions
-          
       - name: 创建 hacg 目录
         run: mkdir -p songw_Actions/cdnImg/hacg
-
-      - name: 拉取远程更改
-        run: |
-          cd songw_Actions/cdnImg
-          git pull origin main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          
+        
       - name: 设置 Python
         uses: actions/setup-python@v2
         with:
@@ -37,34 +32,43 @@ jobs:
           cd songw_Actions
           python -m pip install --upgrade pip
           pip install requests
-
       - name: 运行 Python 脚本
         run: |
           cd songw_Actions
           python python/scan_directory.py
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_2 }}
-
+      
+      - name: 拉取 cdnImg 仓库的更改
+        run: |
+          cd songw_Actions/cdnImg
+          git pull origin main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          
       - name: 移动 image_paths.json 文件
         run: mv songw_Actions/image_paths.json songw_Actions/cdnImg/hacg/
+        
+      - name: 切换到 songw_Actions/cdnImg 目录
+        run: cd songw_Actions/cdnImg
 
       - name: 打印当前工作目录
         run: pwd
         
-      - name: 打印变更
-        run: git status
-
-      - name: 进入 cdnImg/hacg 目录
-        run: cd songw_Actions/cdnImg/hacg/
+      - name: 列出当前目录下的子目录
+        run: |
+          cd songw_Actions/cdnImg
+          ls -d */ | grep '/'
         
       - name: Push changes to cdnImg repository
         run: |
+          cd songw_Actions/cdnImg/hacg
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@gmail.com"
           git add .
           git commit -m "Update image paths"
           eval "$(ssh-agent -s)"
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-          git push -f git@github.com:songwqs/cdnImg.git main
+          git push origin main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
