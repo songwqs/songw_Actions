@@ -32,12 +32,17 @@ def main():
     work_dir = os.environ['GITHUB_WORKSPACE']
     base_path = os.path.join(work_dir, base_path)
 
+    # 检查文件夹是否存在，如果不存在则创建
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
+        print(f"已创建文件夹: {base_path}")
+
     all_image_paths = []
 
     for subdir in os.listdir(base_path):
         subdir_path = os.path.join(base_path, subdir)
         if os.path.isdir(subdir_path):
-            subdir_image_paths = get_image_paths(repo_owner, repo_name, f"hacg/{subdir}", github_token, base_path)
+            subdir_image_paths = get_image_paths(repo_owner, repo_name, f"{base_path}/{subdir}", github_token, base_path)
             all_image_paths.extend(subdir_image_paths)
 
     with open('image_paths.json', 'w') as json_file:
