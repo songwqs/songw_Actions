@@ -3,6 +3,7 @@ on:
   schedule:
     - cron: '0 3 * * 0'  # 每周日的3点执行
   workflow_dispatch:
+    # 为手动触发提供一个可选的输入参数
     inputs:
       manual_trigger:
         description: '手动启动'
@@ -11,20 +12,22 @@ on:
 jobs:
   scan_images:
     runs-on: ubuntu-latest
-
     env:
-      REPO_OWNER: songwqs   #用户
-      REPO_NAME: cdnImg     #仓库
-      PATH_TO_SCAN: hacg    #目录
-      OUTPUT_FILE: image_paths.json  #'保存格式'
-
+      REP_NAME: ${{ github.event.repository.name }}
+      REPO_OWNER: songwqs
+      REPO_NAME: cdnImg
+      PATH_TO_SCAN: hacg
+      OUTPUT_FILE: image_paths.json
+      
     steps:
       - name: 签出 songw_Actions 存储库
         uses: actions/checkout@v2
         with:
-          repository: ${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}
+          repository: ${{ env.REPO_OWNER }}/songw_Actions
           path: songw_Actions
-
+      - name: 创建 ${{ env.PATH_TO_SCAN }} 目录
+        run: mkdir -p songw_Actions/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}
+        
       - name: 设置 Python
         uses: actions/setup-python@v2
         with:
@@ -35,35 +38,41 @@ jobs:
           cd songw_Actions
           python -m pip install --upgrade pip
           pip install requests
-
       - name: 运行 Python 脚本
         run: |
           cd songw_Actions
           python python/scan_directory.py
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_2 }}
+          REPO_OWNER: ${{ env.REPO_OWNER }}
+          REPO_NAME: ${{ env.REPO_NAME }}
           PATH_TO_SCAN: ${{ env.PATH_TO_SCAN }}
           OUTPUT_FILE: ${{ env.OUTPUT_FILE }}
-
-      - name: 拉取 cdnImg 仓库的更改
+      
+      - name: 拉取 ${{ env.REPO_NAME }} 仓库的更改
         run: |
-          cd songw_Actions/cdnImg
+          cd songw_Actions/${{ env.REPO_NAME }}
           git pull origin main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
+          
       - name: 移动 image_paths.json 文件
-        run: mv songw_Actions/image_paths.json songw_Actions/cdnImg/hacg/
+        run: mv songw_Actions/image_paths.json songw_Actions/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}/
+        
+      - name: 切换到 songw_Actions/${{ env.REPO_NAME }} 目录
+        run: cd songw_Actions/${{ env.REPO_NAME }}
 
-      - name: 切换到 songw_Actions/cdnImg 目录
-        run: cd songw_Actions/cdnImg
-
+      - name: 打印当前工作目录
+        run: pwd
+        
       - name: 列出当前目录下的子目录
-        run: ls -d */ | grep '/'
-
-      - name: 提交更改到 cdnImg 仓库
         run: |
-          cd songw_Actions/cdnImg/hacg
+          cd songw_Actions/${{ env.REPO_NAME }}
+          ls -d */ | grep '/'
+        
+      - name: Push changes to ${{ env.REPO_NAME }} repository
+        run: |
+          cd songw_Actions/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@gmail.com"
           git add .
