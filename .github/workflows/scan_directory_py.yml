@@ -1,1 +1,70 @@
 
+name: 扫描目录并保存图像路径-py
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  scan_images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 签出 songw_Actions 存储库
+        uses: actions/checkout@v2
+        with:
+          repository: songwqs/songw_Actions
+          path: songw_Actions
+          
+      - name: 创建 hacg 目录
+        run: mkdir -p songw_Actions/cdnImg/hacg
+
+      - name: 拉取远程更改
+        run: |
+          cd songw_Actions/cdnImg
+          git pull origin main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: 设置 Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: 安装依赖项
+        run: |
+          cd songw_Actions
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: 运行 Python 脚本
+        run: |
+          cd songw_Actions
+          python python/scan_directory.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_2 }}
+
+      - name: 移动 image_paths.json 文件
+        run: mv songw_Actions/image_paths.json songw_Actions/cdnImg/hacg/
+
+      - name: 打印当前工作目录
+        run: pwd
+        
+      - name: 打印变更
+        run: git status
+
+      - name: 进入 cdnImg/hacg 目录
+        run: cd songw_Actions/cdnImg/hacg/
+        
+      - name: Push changes to cdnImg repository
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@gmail.com"
+          git add .
+          git commit -m "Update image paths"
+          eval "$(ssh-agent -s)"
+          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+          git push -f git@github.com:songwqs/cdnImg.git main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
