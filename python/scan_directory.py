@@ -23,8 +23,8 @@ def extract_download_links(contents):
             sub_contents = get_github_contents(repo_owner, repo_name, item['path'])
             download_links.extend(extract_download_links(sub_contents))
         elif 'download_url' in item:
-            # 去掉下载链接中的 "https://raw.githubusercontent.com/"
-            download_link = item['download_url'].replace('https://raw.githubusercontent.com/', '')
+            # 去掉下载链接中的 "https://raw.githubusercontent.com/" 和 "/main"
+            download_link = item['download_url'].replace('https://raw.githubusercontent.com/', '').replace('/main/', '')
             download_links.append(download_link)
 
     return download_links
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     path = 'hacg'
     
     # 替换为你想要保存的 JSON 文件路径
-    output_file = 'image_paths.json'
+    output_file = 'download_links.json'
 
     contents = get_github_contents(repo_owner, repo_name, path)
 
