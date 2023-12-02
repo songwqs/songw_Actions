@@ -23,7 +23,9 @@ def extract_download_links(contents):
             sub_contents = get_github_contents(repo_owner, repo_name, item['path'])
             download_links.extend(extract_download_links(sub_contents))
         elif 'download_url' in item:
-            download_links.append(item['download_url'])
+            # 去掉下载链接中的 "https://raw.githubusercontent.com/"
+            download_link = item['download_url'].replace('https://raw.githubusercontent.com/', '')
+            download_links.append(download_link)
 
     return download_links
 
