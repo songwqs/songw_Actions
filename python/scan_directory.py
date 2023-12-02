@@ -38,15 +38,18 @@ def save_to_json(data, output_file):
 
 if __name__ == '__main__':
     # 替换为你的 GitHub 仓库信息和目标目录
-    repo_owner = 'songwqs'
-    repo_name = 'cdnImg'
-    path = 'hacg'
-    
+    # repo_owner = '用户名'
+    # repo_name = '仓库名'
+    # path = '子目录'
     # 替换为你想要保存的 JSON 文件路径
-    output_file = 'image_paths.json'
-
+    # output_file = 'image_paths.json'
+    
+    repo_owner = os.environ.get('REPO_OWNER')
+    repo_name = os.environ.get('REPO_NAME')
+    path = os.environ.get('PATH_TO_SCAN')
+    output_file = os.environ.get('OUTPUT_FILE')
+    
     contents = get_github_contents(repo_owner, repo_name, path)
-
     if contents:
         download_links = extract_download_links(contents)
         save_to_json(download_links, output_file)
