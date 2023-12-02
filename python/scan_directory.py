@@ -2,53 +2,42 @@ import os
 import json
 import requests
 
-def get_image_paths(repo_owner, repo_name, path, github_token):
-    api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{path}"
-    headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"Bearer {github_token}"}
+def get_github_contents(repo_owner, repo_name, path):
+    github_token = os.environ.get('GITHUB_TOKEN')
+    url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{path}'
+    headers = {'Authorization': f'token {github_token}'}
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f'Error: {response.status_code}')
+        return None
+
+def extract_download_links(contents):
+    download_links = []
+
+    for item in contents:
+        if 'download_url' in item:
+            download_links.append(item['download_url'])
+
+    return download_links
+
+def save_to_json(data, output_file):
+    with open(output_file, 'w') as json_file:
+        json.dump(data, json_file, indent=2)
+
+if __name__ == '__main__':
+    # 替换为你的 GitHub 仓库信息和目标目录
+    repo_owner = 'songwqs'
+    repo_name = 'cdnImg'
+    path = 'hacg'
     
-    try:
-        response = requests.get(api_url, headers=headers)
-        response.raise_for_status()
-        contents = response.json()
+    # 替换为你想要保存的 JSON 文件路径
+    output_file = 'image_paths.json'
 
-        image_paths = []
+    contents = get_github_contents(repo_owner, repo_name, path)
 
-        for item in contents:
-            if item["type"] == "file" and item["name"].lower().endswith(('.jpg', '.png', '.jpeg', '.gif')):
-                full_path = f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/main/{path}/{item['name']}"
-                image_paths.append(full_path)
-
-        return image_paths
-    except requests.exceptions.HTTPError as e:
-        print(f"Error accessing GitHub API: {e}")
-        return []
-
-def main():
-    repo_owner = "songwqs"
-    repo_name = "cdnImg"
-    github_token = os.environ['GITHUB_TOKEN']
-
-    # Use GitHub Actions checkout path as the base_path
-    base_path = os.environ['GITHUB_WORKSPACE']
-    hacg_path = os.path.join(base_path, "hacg")
-
-    all_image_paths = []
-
-    # 遍历/hacg/目录下的所有子目录
-    for subdir in os.listdir(hacg_path):
-        subdir_path = os.path.join(hacg_path, subdir)
-        if os.path.isdir(subdir_path):
-            # 在每个子目录中查找图片
-            subdir_image_paths = get_image_paths(repo_owner, repo_name, f"hacg/{subdir}", github_token)
-            all_image_paths.extend(subdir_image_paths)
-
-    with open('image_paths.json', 'w') as json_file:
-        json.dump(all_image_paths, json_file, indent=2)
-
-    # Read and print the content of image_paths.json
-    with open('image_paths.json', 'r') as json_file:
-        content = json_file.read()
-        print(content)
-
-if __name__ == "__main__":
-    main()
+    if contents:
+        download_links = extract_download_links(contents)
+        save_to_json(download_links, output_file)
