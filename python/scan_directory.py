@@ -24,7 +24,11 @@ def main():
     base_path = "hacg"
     github_token = os.environ['GITHUB_TOKEN']
 
-    # 使用 GitHub Actions 的工作目录作为基准
+    # Print workspace and base_path for debugging
+    print(f"Workspace: {os.environ['GITHUB_WORKSPACE']}")
+    print(f"Base Path: {base_path}")
+
+    # Use GitHub Actions workspace as the base_path
     work_dir = os.environ['GITHUB_WORKSPACE']
     base_path = os.path.join(work_dir, base_path)
 
@@ -39,7 +43,7 @@ def main():
     with open('image_paths.json', 'w') as json_file:
         json.dump(all_image_paths, json_file, indent=2)
 
-    # 读取并打印输出 image_paths.json 内容
+    # Read and print the content of image_paths.json
     with open('image_paths.json', 'r') as json_file:
         content = json_file.read()
         print(content)
