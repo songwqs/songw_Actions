@@ -20,13 +20,13 @@ jobs:
       OUTPUT_FILE: image_paths.json  #'json名字'
       
     steps:
-      - name: 签出 songw_Actions 存储库
+      - name: 签出 ${{ env.REP_NAME }} 存储库
         uses: actions/checkout@v2
         with:
-          repository: ${{ env.REPO_OWNER }}/songw_Actions
-          path: songw_Actions
+          repository: ${{ env.REPO_OWNER }}/${{ env.REP_NAME }}
+          path: ${{ env.REP_NAME }}
       - name: 创建 ${{ env.PATH_TO_SCAN }} 目录
-        run: mkdir -p songw_Actions/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}
+        run: mkdir -p ${{ env.REP_NAME }}/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}
         
       - name: 设置 Python
         uses: actions/setup-python@v2
@@ -35,12 +35,12 @@ jobs:
 
       - name: 安装依赖项
         run: |
-          cd songw_Actions
+          cd ${{ env.REP_NAME }}
           python -m pip install --upgrade pip
           pip install requests
       - name: 运行 Python 脚本
         run: |
-          cd songw_Actions
+          cd ${{ env.REP_NAME }}
           python python/scan_directory.py
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN_2 }}
@@ -51,28 +51,28 @@ jobs:
       
       - name: 拉取 ${{ env.REPO_NAME }} 仓库的更改
         run: |
-          cd songw_Actions/${{ env.REPO_NAME }}
+          cd ${{ env.REP_NAME }}/${{ env.REPO_NAME }}
           git pull origin main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           
       - name: 移动 image_paths.json 文件
-        run: mv songw_Actions/image_paths.json songw_Actions/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}/
+        run: mv ${{ env.REP_NAME }}/image_paths.json ${{ env.REP_NAME }}/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}/
         
-      - name: 切换到 songw_Actions/${{ env.REPO_NAME }} 目录
-        run: cd songw_Actions/${{ env.REPO_NAME }}
+      - name: 切换到 ${{ env.REP_NAME }}/${{ env.REPO_NAME }} 目录
+        run: cd ${{ env.REP_NAME }}/${{ env.REPO_NAME }}
 
       - name: 打印当前工作目录
         run: pwd
         
       - name: 列出当前目录下的子目录
         run: |
-          cd songw_Actions/${{ env.REPO_NAME }}
+          cd ${{ env.REP_NAME }}/${{ env.REPO_NAME }}
           ls -d */ | grep '/'
         
       - name: Push changes to ${{ env.REPO_NAME }} repository
         run: |
-          cd songw_Actions/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}
+          cd ${{ env.REP_NAME }}/${{ env.REPO_NAME }}/${{ env.PATH_TO_SCAN }}
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@gmail.com"
           git add .
