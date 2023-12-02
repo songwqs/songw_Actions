@@ -44,4 +44,5 @@ def main():
         content = json_file.read()
         print(content)
 
-if __name__ == "__main_
+if __name__ == "__main__":
+    main()
